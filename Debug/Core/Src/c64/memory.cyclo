@@ -1,0 +1,3 @@
+../Core/Src/c64/memory.c:8:8:mem_read	14
+../Core/Src/c64/memory.c:96:10:mem_read16	1
+../Core/Src/c64/memory.c:101:6:mem_write	22
