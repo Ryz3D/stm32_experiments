@@ -29,9 +29,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
- ../Core/Inc/c64/display.h ../Core/Inc/c64/cpu.h ../Core/Inc/c64/memory.h \
- ../Core/Inc/c64/basic.h ../Core/Inc/c64/characters.h \
- ../Core/Inc/c64/kernal.h ../Core/Inc/c64/cia.h ../Core/Inc/c64/vic.h
+ ../Core/Inc/pal.h ../Core/Inc/c64/display.h ../Core/Inc/c64/cpu.h \
+ ../Core/Inc/c64/memory.h ../Core/Inc/c64/basic.h \
+ ../Core/Inc/c64/characters.h ../Core/Inc/c64/kernal.h \
+ ../Core/Inc/c64/cia.h ../Core/Inc/c64/vic.h
 ../Core/Inc/main.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 ../Core/Inc/stm32l4xx_hal_conf.h:
@@ -63,6 +64,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h:
+../Core/Inc/pal.h:
 ../Core/Inc/c64/display.h:
 ../Core/Inc/c64/cpu.h:
 ../Core/Inc/c64/memory.h:

@@ -1,7 +1,7 @@
 #include "memory.h"
 
 int8_t zeropage[256], stack[256], sysvar[512], screen[1024], cia2_reg[16];
-int8_t basicram[38912];
+int8_t basicram[24827]; // 38912
 uint8_t ram[4096] = {
 	120, 162, 0, 160, 0, 200, 208, 253, 232, 208, 250, 108, 252, 255 };
 

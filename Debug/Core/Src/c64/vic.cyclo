@@ -1,3 +1,3 @@
 ../Core/Src/c64/vic.c:6:8:vic_read	3
 ../Core/Src/c64/vic.c:16:6:vic_write	1
-../Core/Src/c64/vic.c:21:6:vic_write_screen	7
+../Core/Src/c64/vic.c:21:6:vic_write_screen	6

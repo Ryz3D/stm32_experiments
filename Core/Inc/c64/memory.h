@@ -10,7 +10,7 @@
 #include "vic.h"
 
 extern int8_t zeropage[256], stack[256], sysvar[512], screen[1024], cia2_reg[16];
-extern int8_t basicram[38912];
+extern int8_t basicram[24827]; // 38912
 extern uint8_t ram[4096];
 
 int8_t mem_read(uint16_t addr);

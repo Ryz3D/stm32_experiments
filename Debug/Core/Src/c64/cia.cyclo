@@ -1,3 +1,4 @@
-../Core/Src/c64/cia.c:3:6:pin_mode	1
-../Core/Src/c64/cia.c:37:8:cia_read	5
-../Core/Src/c64/cia.c:65:6:cia_write	4
+../Core/Src/c64/cia.c:5:9:gpio_read	1
+../Core/Src/c64/cia.c:9:6:gpio_write	1
+../Core/Src/c64/cia.c:13:8:cia_read	5
+../Core/Src/c64/cia.c:39:6:cia_write	2
