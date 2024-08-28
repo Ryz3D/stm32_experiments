@@ -60,10 +60,10 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 PAL_t hpal1;
-GPIO_TypeDef *cia_gpio_ports[16] = {
-	GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA, GPIOA };
-uint16_t cia_gpio_pins[16] = {
-	GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0, GPIO_PIN_0 };
+GPIO_TypeDef *cia_row_ports[16];
+uint16_t cia_row_pins[16];
+GPIO_TypeDef *cia_col_ports[16];
+uint16_t cia_col_pins[16];
 uint8_t c64_irq = 0;
 /* USER CODE END PV */
 
@@ -177,6 +177,42 @@ int main(void)
 	}
 	PAL_Start(&hpal1);
 
+	HAL_TIM_Base_Start_IT(&htim15);
+
+	cia_row_ports[0] = KB_Row0_GPIO_Port;
+	cia_row_pins[0] = KB_Row0_Pin;
+	cia_row_ports[1] = KB_Row1_GPIO_Port;
+	cia_row_pins[1] = KB_Row1_Pin;
+	cia_row_ports[2] = KB_Row2_GPIO_Port;
+	cia_row_pins[2] = KB_Row2_Pin;
+	cia_row_ports[3] = KB_Row3_GPIO_Port;
+	cia_row_pins[3] = KB_Row3_Pin;
+	cia_row_ports[4] = KB_Row4_GPIO_Port;
+	cia_row_pins[4] = KB_Row4_Pin;
+	cia_row_ports[5] = KB_Row5_GPIO_Port;
+	cia_row_pins[5] = KB_Row5_Pin;
+	cia_row_ports[6] = KB_Row6_GPIO_Port;
+	cia_row_pins[6] = KB_Row6_Pin;
+	cia_row_ports[7] = KB_Row7_GPIO_Port;
+	cia_row_pins[7] = KB_Row7_Pin;
+
+	cia_col_ports[0] = KB_Col0_GPIO_Port;
+	cia_col_pins[0] = KB_Col0_Pin;
+	cia_col_ports[1] = KB_Col1_GPIO_Port;
+	cia_col_pins[1] = KB_Col1_Pin;
+	cia_col_ports[2] = KB_Col2_GPIO_Port;
+	cia_col_pins[2] = KB_Col2_Pin;
+	cia_col_ports[3] = KB_Col3_GPIO_Port;
+	cia_col_pins[3] = KB_Col3_Pin;
+	cia_col_ports[4] = KB_Col4_GPIO_Port;
+	cia_col_pins[4] = KB_Col4_Pin;
+	cia_col_ports[5] = KB_Col5_GPIO_Port;
+	cia_col_pins[5] = KB_Col5_Pin;
+	cia_col_ports[6] = KB_Col6_GPIO_Port;
+	cia_col_pins[6] = KB_Col6_Pin;
+	cia_col_ports[7] = KB_Col7_GPIO_Port;
+	cia_col_pins[7] = KB_Col7_Pin;
+
 	reset();
 	ram[0xff0] = ram[0xff1] = ram[0xff2] = 0;
 	while (1)
@@ -215,8 +251,10 @@ int main(void)
 			else if ((uint8_t)a != 0x93)
 				; // putchar(a);
 		}
-		// if (!gpio_get_level(42))
-		// nmi();
+		if (HAL_GPIO_ReadPin(KB_Restore_GPIO_Port, KB_Restore_Pin) == GPIO_PIN_RESET)
+		{
+			nmi();
+		}
 		exec_ins();
 	}
 #endif
@@ -453,6 +491,10 @@ static void MX_TIM15_Init(void)
 		0 };
 	TIM_MasterConfigTypeDef sMasterConfig = {
 		0 };
+	TIM_OC_InitTypeDef sConfigOC = {
+		0 };
+	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {
+		0 };
 
 	/* USER CODE BEGIN TIM15_Init 1 */
 
@@ -473,9 +515,35 @@ static void MX_TIM15_Init(void)
 	{
 		Error_Handler();
 	}
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+	if (HAL_TIM_OC_Init(&htim15) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim15, &sMasterConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sConfigOC.OCMode = TIM_OCMODE_TIMING;
+	sConfigOC.Pulse = 0;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	if (HAL_TIM_OC_ConfigChannel(&htim15, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+	sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+	sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+	sBreakDeadTimeConfig.DeadTime = 0;
+	sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+	sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+	sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+	if (HAL_TIMEx_ConfigBreakDeadTime(&htim15, &sBreakDeadTimeConfig) != HAL_OK)
 	{
 		Error_Handler();
 	}
@@ -555,7 +623,14 @@ static void MX_GPIO_Init(void)
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, LD2_Pin | KB_Col0_Pin | KB_Col2_Pin, GPIO_PIN_RESET);
+
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(KB_Col1_GPIO_Port, KB_Col1_Pin, GPIO_PIN_RESET);
+
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOB, KB_Col6_Pin | KB_Col7_Pin | KB_Col3_Pin | KB_Col5_Pin
+		| KB_Col4_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : B1_Pin */
 	GPIO_InitStruct.Pin = B1_Pin;
@@ -563,12 +638,46 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : LD2_Pin */
-	GPIO_InitStruct.Pin = LD2_Pin;
+	/*Configure GPIO pins : LD2_Pin KB_Col0_Pin KB_Col2_Pin */
+	GPIO_InitStruct.Pin = LD2_Pin | KB_Col0_Pin | KB_Col2_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : KB_Row4_Pin KB_Row7_Pin KB_Row0_Pin */
+	GPIO_InitStruct.Pin = KB_Row4_Pin | KB_Row7_Pin | KB_Row0_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : KB_Col1_Pin */
+	GPIO_InitStruct.Pin = KB_Col1_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(KB_Col1_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : KB_Col6_Pin KB_Col7_Pin KB_Col3_Pin KB_Col5_Pin
+	 KB_Col4_Pin */
+	GPIO_InitStruct.Pin = KB_Col6_Pin | KB_Col7_Pin | KB_Col3_Pin | KB_Col5_Pin
+		| KB_Col4_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : KB_Row1_Pin KB_Row3_Pin KB_Restore_Pin */
+	GPIO_InitStruct.Pin = KB_Row1_Pin | KB_Row3_Pin | KB_Restore_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : KB_Row2_Pin KB_Row6_Pin KB_Row5_Pin */
+	GPIO_InitStruct.Pin = KB_Row2_Pin | KB_Row6_Pin | KB_Row5_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	/* USER CODE BEGIN MX_GPIO_Init_2 */
 	/* USER CODE END MX_GPIO_Init_2 */
@@ -577,17 +686,23 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 int __io_putchar(int ch)
 {
-	HAL_UART_Transmit(&huart2, &ch, sizeof(uint8_t), 10);
+	// HAL_UART_Transmit(&huart2, &ch, sizeof(uint8_t), 10);
+
+	return ch;
 }
 
 void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef *hdac)
 {
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	PAL_IntHalfCplt(&hpal1);
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 }
 
 void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef *hdac)
 {
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	PAL_IntCplt(&hpal1);
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -598,14 +713,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 }
 
-uint8_t gpio_read(uint8_t pin)
+uint8_t gpio_read_row(uint8_t pin)
 {
-	return HAL_GPIO_ReadPin(cia_gpio_ports[pin], cia_gpio_pins[pin]) == GPIO_PIN_SET ? 1 : 0;
+	return HAL_GPIO_ReadPin(cia_row_ports[pin], cia_row_pins[pin]) == GPIO_PIN_SET ? 1 : 0;
 }
 
-void gpio_write(uint8_t pin, uint8_t state)
+void gpio_write_col(uint8_t pin, uint8_t state)
 {
-	HAL_GPIO_WritePin(cia_gpio_ports[pin], cia_gpio_pins[pin], state ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(cia_col_ports[pin], cia_col_pins[pin], state ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 void display_set_pixel(uint16_t x, uint16_t y, bool state)
@@ -620,11 +735,11 @@ void display_set_pixel(uint16_t x, uint16_t y, bool state)
 	{
 		if (state)
 		{
-			hpal1.frame_buffer[y * PAL_FRAME_LINE_LEN + x] = x % 2 == 0 ? PAL_WHITE : (PAL_WHITE - 10);
+			hpal1.frame_buffer[y * PAL_FRAME_LINE_LEN + x] = PAL_WHITE;
 		}
 		else
 		{
-			hpal1.frame_buffer[y * PAL_FRAME_LINE_LEN + x] = ((x + y) % 2 == 0) ? PAL_BLACK : (PAL_BLACK + 10);
+			hpal1.frame_buffer[y * PAL_FRAME_LINE_LEN + x] = PAL_BLACK;
 		}
 	}
 }

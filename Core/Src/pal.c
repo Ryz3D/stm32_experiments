@@ -83,9 +83,9 @@ void PAL_Init(PAL_t *hpal)
 		}
 	}
 
-	hpal->line_counter = PAL_LINE_COUNT - 1;
-	PAL_SetBuffer(hpal, 0);
-	PAL_SetBuffer(hpal, 1);
+	hpal->line_counter = 0;
+	PAL_COPYBUFFER_DEF_1(hpal, 0);
+	PAL_COPYBUFFER_DEF_2(hpal, 0);
 }
 
 void PAL_Start(PAL_t *hpal)
@@ -94,98 +94,113 @@ void PAL_Start(PAL_t *hpal)
 	HAL_TIM_Base_Start(hpal->htim);
 }
 
-void PAL_CopyBuffer(PAL_t *hpal, uint32_t n, uint8_t second)
+void PAL_IntHalfCplt(PAL_t *hpal)
 {
-	if (second)
-	{
-		memcpy(hpal->dma_buffer + PAL_BUFFER_LEN1, pal_line_buffers + PAL_LINE_LEN * n + PAL_BUFFER_LEN1, PAL_BUFFER_LEN2);
-	}
-	else
-	{
-		memcpy(hpal->dma_buffer, pal_line_buffers + PAL_LINE_LEN * n, PAL_BUFFER_LEN1);
-	}
-}
-
-void PAL_CopyLine(PAL_t *hpal, uint32_t n, uint8_t second)
-{
-	if (second)
-	{
-		memcpy(hpal->dma_buffer + PAL_LINE_OFF2, hpal->frame_buffer + PAL_FRAME_LINE_LEN * n + PAL_LINE_LEN1, PAL_LINE_LEN2);
-	}
-	else
-	{
-		memcpy(hpal->dma_buffer + PAL_LINE_OFF1, hpal->frame_buffer + PAL_FRAME_LINE_LEN * n, PAL_LINE_LEN1);
-	}
-}
-
-void PAL_SetBuffer(PAL_t *hpal, uint8_t second)
-{
-	// 0 ll
-	// 1 ls
-	// 2 ss
-	// 3 sl
-	// 4 sync
-
 	uint32_t line = (hpal->line_counter + 1) % PAL_LINE_COUNT;
 	if (line == 0)
 	{
-		PAL_CopyBuffer(hpal, 0, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 0);
 	}
 	else if (line == 2)
 	{
-		PAL_CopyBuffer(hpal, 1, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 1);
 	}
 	else if (line == 3)
 	{
-		PAL_CopyBuffer(hpal, 2, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 2);
 	}
 	else if (line == 5)
 	{
-		PAL_CopyBuffer(hpal, 4, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 4);
 	}
 	else if (line >= 5 + PAL_BLANKING_LINES && line < 310)
 	{
 		// TODO: constrain
-		PAL_CopyLine(hpal, line - 22, second);
+		PAL_COPYLINE_DEF_1(hpal, line - 22);
 	}
 	else if (line == 310)
 	{
-		PAL_CopyBuffer(hpal, 2, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 2);
 	}
 	else if (line == 312)
 	{
-		PAL_CopyBuffer(hpal, 3, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 3);
 	}
 	else if (line == 313)
 	{
-		PAL_CopyBuffer(hpal, 0, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 0);
 	}
 	else if (line == 315)
 	{
-		PAL_CopyBuffer(hpal, 2, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 2);
 	}
 	else if (line == 317)
 	{
-		PAL_CopyBuffer(hpal, 4, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 4);
 	}
 	else if (line >= 317 + PAL_BLANKING_LINES && line < 622)
 	{
 		// TODO: constrain
-		PAL_CopyLine(hpal, line - 334, second);
+		PAL_COPYLINE_DEF_1(hpal, line - 334);
 	}
 	else if (line == 622)
 	{
-		PAL_CopyBuffer(hpal, 2, second);
+		PAL_COPYBUFFER_DEF_1(hpal, 2);
 	}
-}
-
-void PAL_IntHalfCplt(PAL_t *hpal)
-{
-	PAL_SetBuffer(hpal, 0);
 }
 
 void PAL_IntCplt(PAL_t *hpal)
 {
-	PAL_SetBuffer(hpal, 1);
-	hpal->line_counter++;
+	uint32_t line = (hpal->line_counter + 1) % PAL_LINE_COUNT;
+	hpal->line_counter = line;
+	if (line == 0)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 0);
+	}
+	else if (line == 2)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 1);
+	}
+	else if (line == 3)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 2);
+	}
+	else if (line == 5)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 4);
+	}
+	else if (line >= 5 + PAL_BLANKING_LINES && line < 310)
+	{
+		// TODO: constrain
+		PAL_COPYLINE_DEF_2(hpal, line - 22);
+	}
+	else if (line == 310)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 2);
+	}
+	else if (line == 312)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 3);
+	}
+	else if (line == 313)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 0);
+	}
+	else if (line == 315)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 2);
+	}
+	else if (line == 317)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 4);
+	}
+	else if (line >= 317 + PAL_BLANKING_LINES && line < 622)
+	{
+		// TODO: constrain
+		PAL_COPYLINE_DEF_2(hpal, line - 334);
+	}
+	else if (line == 622)
+	{
+		PAL_COPYBUFFER_DEF_2(hpal, 2);
+	}
 }

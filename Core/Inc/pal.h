@@ -13,6 +13,7 @@
 #include "stm32l4xx_hal.h"
 
 #define PAL_ARR 21
+// 0.954
 #define PAL_TIME_CORRECTION 0.954
 #define PAL_OFF 0
 #define PAL_ZERO 23
@@ -29,7 +30,7 @@
 // 0.0, 1.0
 #define PAL_ONE_US PAL_SA(0.0)
 #define PAL_LINE_SYNC PAL_SA(4.7)
-// 4.7, 5.8
+// 4.7, 5.8, 6.5
 #define PAL_BACK_PORCH PAL_SA(6.5)
 // 1.50, 1.55, 1.65
 #define PAL_FRONT_PORCH PAL_SA(1.55)
@@ -42,6 +43,10 @@
 #define PAL_LINE_LEN1 (PAL_LINE_LEN / 2 - PAL_LINE_OFF1)
 #define PAL_LINE_OFF2 (PAL_LINE_LEN / 2)
 #define PAL_LINE_LEN2 ((PAL_LINE_LEN + 1) / 2 - PAL_ONE_US - PAL_FRONT_PORCH)
+#define PAL_COPYBUFFER_DEF_1(hpal, n) memcpy(hpal->dma_buffer, pal_line_buffers + PAL_LINE_LEN * (n), PAL_BUFFER_LEN1);
+#define PAL_COPYBUFFER_DEF_2(hpal, n) memcpy(hpal->dma_buffer + PAL_BUFFER_LEN1, pal_line_buffers + PAL_LINE_LEN * (n) + PAL_BUFFER_LEN1, PAL_BUFFER_LEN2);
+#define PAL_COPYLINE_DEF_1(hpal, n) memcpy(hpal->dma_buffer + PAL_LINE_OFF1, hpal->frame_buffer + PAL_FRAME_LINE_LEN * (n), PAL_LINE_LEN1);
+#define PAL_COPYLINE_DEF_2(hpal, n) memcpy(hpal->dma_buffer + PAL_LINE_OFF2, hpal->frame_buffer + PAL_FRAME_LINE_LEN * (n) + PAL_LINE_LEN1, PAL_LINE_LEN2);
 
 typedef struct
 {
